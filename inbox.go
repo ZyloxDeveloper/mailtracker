@@ -67,11 +67,6 @@ func (w *Tracker) checkInbox(handler func(Email)) {
 			continue
 		}
 
-		body := extractBody(m)
-		if len(body) > 1500 {
-			body = body[:1500] + "..."
-		}
-
 		email := Email{
 			From:    msg.Envelope.From[0].Address(),
 			Subject: msg.Envelope.Subject,
