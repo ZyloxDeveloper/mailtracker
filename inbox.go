@@ -88,10 +88,10 @@ func extractBody(m *message.Entity) string {
 			if err != nil {
 				break
 			}
-			slurp, _ := io.ReadAll(p.Body)
-			return string(slurp)
+			d, _ := io.ReadAll(p.Body)
+			return string(d)
 		}
 	}
-	slurp, _ := io.ReadAll(m.Body)
-	return string(slurp)
+	d, _ := io.ReadAll(m.Body)
+	return string(d)
 }
