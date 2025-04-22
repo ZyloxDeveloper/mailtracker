@@ -70,7 +70,7 @@ func (w *Tracker) checkInbox(handler func(Email)) {
 		email := Email{
 			From:    msg.Envelope.From[0].Address(),
 			Subject: msg.Envelope.Subject,
-			Body:    body,
+			Body:    extractBody(m),
 			UID:     msg.Uid,
 			Time:    msgTime,
 		}
