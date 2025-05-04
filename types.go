@@ -15,4 +15,5 @@ type TrackerConfig struct {
 	EmailAddress  string
 	EmailPassword string
 	CheckInterval time.Duration
+	CacheInterval time.Duration
 }

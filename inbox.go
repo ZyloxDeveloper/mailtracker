@@ -51,7 +51,7 @@ func (w *Tracker) checkInbox(handler func(Email)) {
 		}
 
 		msgTime := msg.Envelope.Date
-		if time.Since(msgTime) > time.Minute {
+		if time.Since(msgTime) > w.cfg.CacheInterval {
 			continue
 		}
 
