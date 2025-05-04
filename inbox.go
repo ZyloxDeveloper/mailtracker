@@ -20,6 +20,7 @@ func (w *Tracker) checkInbox(handler func(Email)) {
 		return
 	}
 
+	// Open INBOX in read-write mode so we can delete emails
 	mbox, err := c.Select("INBOX", false)
 	if err != nil || mbox.Messages == 0 {
 		return
@@ -42,6 +43,8 @@ func (w *Tracker) checkInbox(handler func(Email)) {
 			imap.FetchEnvelope, imap.FetchUid, imap.FetchFlags, section.FetchItem(),
 		}, messages)
 	}()
+
+	var toDelete imap.SeqSet
 
 	for msg := range messages {
 		if msg == nil || msg.Envelope == nil {
@@ -80,18 +83,19 @@ func (w *Tracker) checkInbox(handler func(Email)) {
 		handler(email)
 
 		if w.cfg.DeleteCached {
-			delSeqSet := new(imap.SeqSet)
-			delSeqSet.AddNum(msg.SeqNum)
-			item := imap.FormatFlagsOp(imap.AddFlags, true)
-			flags := []interface{}{imap.DeletedFlag}
-			_ = c.Store(delSeqSet, item, flags, nil)
+			toDelete.AddNum(msg.SeqNum)
 		}
 	}
 
 	<-done
 
-	if w.cfg.DeleteCached {
-		_ = c.Expunge(nil)
+	// Mark all to-delete messages as \Deleted and expunge
+	if w.cfg.DeleteCached && !toDelete.Empty() {
+		item := imap.FormatFlagsOp(imap.AddFlags, true)
+		flags := []interface{}{imap.DeletedFlag}
+		if err := c.Store(&toDelete, item, flags, nil); err == nil {
+			_ = c.Expunge(nil)
+		}
 	}
 }
 
