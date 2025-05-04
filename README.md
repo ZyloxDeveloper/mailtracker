@@ -19,3 +19,4 @@ go watcher.Start(func(email emailwatcher.Email) {
 	fmt.Println(email.Subject)
 	fmt.Println(email.Body)
 })
+```
