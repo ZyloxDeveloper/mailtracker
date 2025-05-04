@@ -38,7 +38,9 @@ func (w *Tracker) checkInbox(handler func(Email)) {
 	section := &imap.BodySectionName{}
 
 	go func() {
-		done <- c.Fetch(seqSet, []imap.FetchItem{imap.FetchEnvelope, imap.FetchUid, section.FetchItem()}, messages)
+		done <- c.Fetch(seqSet, []imap.FetchItem{
+			imap.FetchEnvelope, imap.FetchUid, imap.FetchFlags, section.FetchItem(),
+		}, messages)
 	}()
 
 	for msg := range messages {
@@ -76,9 +78,21 @@ func (w *Tracker) checkInbox(handler func(Email)) {
 		}
 
 		handler(email)
+
+		if w.cfg.DeleteCached {
+			delSeqSet := new(imap.SeqSet)
+			delSeqSet.AddNum(msg.SeqNum)
+			item := imap.FormatFlagsOp(imap.AddFlags, true)
+			flags := []interface{}{imap.DeletedFlag}
+			_ = c.Store(delSeqSet, item, flags, nil)
+		}
 	}
 
 	<-done
+
+	if w.cfg.DeleteCached {
+		_ = c.Expunge(nil)
+	}
 }
 
 func extractBody(m *message.Entity) string {

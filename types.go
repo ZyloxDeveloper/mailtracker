@@ -16,4 +16,5 @@ type TrackerConfig struct {
 	EmailPassword string
 	CheckInterval time.Duration
 	CacheInterval time.Duration
+	DeleteCached  bool
 }
